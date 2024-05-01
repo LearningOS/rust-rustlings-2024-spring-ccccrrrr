@@ -2,7 +2,6 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -52,13 +51,13 @@ impl<T> Default for Queue<T> {
     }
 }
 
-pub struct myStack<T>
+pub struct myStack<T: Copy>
 {
 	//TODO
 	q1:Queue<T>,
 	q2:Queue<T>
 }
-impl<T> myStack<T> {
+impl<T: Copy> myStack<T> {
     pub fn new() -> Self {
         Self {
 			//TODO
@@ -68,14 +67,36 @@ impl<T> myStack<T> {
     }
     pub fn push(&mut self, elem: T) {
         //TODO
+        if self.q1.is_empty() {
+            self.q2.enqueue(elem);
+        } else if self.q2.is_empty() {
+            self.q1.enqueue(elem);
+        }
     }
     pub fn pop(&mut self) -> Result<T, &str> {
         //TODO
-		Err("Stack is empty")
+        if self.is_empty() {
+            return Err("Stack is empty");
+        }
+        if self.q1.is_empty() {
+            // q1 is empty, q2 is not empty
+            while self.q2.size() > 1 {
+                self.q1.enqueue(*self.q2.peek().unwrap());
+                self.q2.dequeue();
+            }
+            self.q2.dequeue()
+        } else {
+            // q1 is not empty, q2 is empty
+            while self.q1.size() > 1 {
+                self.q2.enqueue(*self.q1.peek().unwrap());
+                self.q1.dequeue();
+            }
+            self.q1.dequeue()
+        }
     }
     pub fn is_empty(&self) -> bool {
 		//TODO
-        true
+        return self.q1.is_empty() && self.q2.is_empty();
     }
 }
 

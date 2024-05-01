@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -18,7 +17,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default+Ord,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -38,6 +37,19 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut index: usize = self.count;
+
+        // ensures it has parent node
+        while index / 2 > 0  {
+            if (self.comparator)(&self.items[index], &self.items[index / 2]) {
+                self.items.swap(index, index / 2);
+                index = index / 2;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,13 +70,20 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        if(self.right_child_idx(idx) > self.count) {
+            return self.left_child_idx(idx)
+        }
+		if (self.comparator)(&self.items[self.left_child_idx(idx)], &self.items[self.right_child_idx(idx)]) {
+            return self.left_child_idx(idx);
+        } else {
+            return self.right_child_idx(idx);
+        }
     }
 }
 
 impl<T> Heap<T>
 where
-    T: Default + Ord,
+    T: Default+Ord,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
@@ -79,13 +98,30 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Ord,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.count > 0 {
+            let next = self.items.swap_remove(1);
+            self.count -= 1;
+            let mut index: usize = 1;
+            while self.children_present(index) {
+                let smallest = self.smallest_child_idx(index);
+                if !(self.comparator)(&self.items[index], &self.items[smallest]) {
+                    self.items.swap(index, smallest);
+                    index = smallest;
+                } else {
+                    break;
+                }
+            }
+
+            return Some(next);
+        } else {
+            None
+        }
     }
 }
 
@@ -95,7 +131,7 @@ impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default+Ord+std::marker::Copy,
     {
         Heap::new(|a, b| a < b)
     }
@@ -107,7 +143,7 @@ impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default+Ord+std::marker::Copy,
     {
         Heap::new(|a, b| a > b)
     }

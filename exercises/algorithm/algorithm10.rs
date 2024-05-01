@@ -2,7 +2,6 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -30,18 +29,68 @@ impl Graph for UndirectedGraph {
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        println!("graph for undirectedGraph? {:?}", edge);
+        self.add_node(edge.0);
+        self.add_node(edge.1);
+        self.add_edge_(edge);
+        self.add_edge_((edge.1, edge.0, edge.2));
+    }
+    fn add_edge_(&mut self, edge: (&str, &str, i32)) {
+        //TODO
+        if self.contains(edge.0) {
+            match self.adjacency_table_mutable().get_mut(edge.0) {
+                None => {}
+                Some(vec) => {
+                    for tuple in vec.iter_mut() {
+                        if tuple.0 == edge.1 {
+                            if edge.2 < tuple.1 {
+                                tuple.1 = edge.2;
+                            }
+                            return;
+                        }
+                    }
+                    vec.push((edge.1.to_string(), edge.2));
+                }
+            }
+        } else {
+            self.adjacency_table_mutable().insert(edge.0.to_string(), vec![(edge.1.to_string(), edge.2)]);
+        }
     }
 }
 pub trait Graph {
     fn new() -> Self;
+    fn add_edge_(&mut self, edge: (&str, &str, i32));
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         //TODO
-		true
+        println!("add_node??? {:?}", node);
+        if self.contains(node) {
+            return false;
+        }
+        self.adjacency_table_mutable().insert(node.to_string(), vec![]);
+        return true;
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        if self.contains(edge.0) {
+            match self.adjacency_table_mutable().get_mut(edge.0) {
+                None => {}
+                Some(vec) => {
+                    for tuple in vec.iter_mut() {
+                        if tuple.0 == edge.1 {
+                            if edge.2 < tuple.1 {
+                                tuple.1 = edge.2;
+                            }
+                            return;
+                        }
+                    }
+                    vec.push((edge.1.to_string(), edge.2));
+                }
+            }
+        } else {
+            self.adjacency_table_mutable().insert(edge.0.to_string(), vec![(edge.1.to_string(), edge.2)]);
+        }
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
@@ -78,6 +127,7 @@ mod test_undirected_graph {
             (&String::from("c"), &String::from("b"), 10),
         ];
         for edge in expected_edges.iter() {
+            println!("check: ({:?}, {:?}, {:?})", edge.0, edge.1, edge.2);
             assert_eq!(graph.edges().contains(edge), true);
         }
     }

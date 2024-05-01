@@ -2,8 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -14,7 +12,7 @@ struct Node<T> {
     next: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Node<T> {
+impl<T: std::cmp::PartialOrd + Clone> Node<T> {
     fn new(t: T) -> Node<T> {
         Node {
             val: t,
@@ -29,13 +27,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,11 +70,39 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut list_c = LinkedList::<T>::new();
+        let mut entry_a = list_a.start;
+        let mut entry_b = list_b.start;
+        while entry_a.is_some() && entry_b.is_some() {
+            if let (Some(entry_a_v), Some(entry_b_v)) = (entry_a, entry_b) {
+                unsafe {
+                    if entry_a_v.as_ref().val < entry_b_v.as_ref().val {
+                        list_c.add(entry_a_v.as_ref().val.clone());
+                        entry_a = entry_a.unwrap().as_ref().next;
+                    } else {
+                        list_c.add(entry_b_v.as_ref().val.clone());
+                        entry_b = entry_b.unwrap().as_ref().next;
+                    }
+                }
+            }
         }
+        while entry_a.is_some() {
+            if let Some(entry_a_v) = entry_a {
+                unsafe {
+                    list_c.add(entry_a_v.as_ref().val.clone());
+                    entry_a = entry_a.unwrap().as_ref().next;
+                }
+            }
+        }
+        while entry_b.is_some() {
+            if let Some(entry_b_v) = entry_b {
+                unsafe {
+                    list_c.add(entry_b_v.as_ref().val.clone());
+                    entry_b = entry_b.unwrap().as_ref().next;
+                }
+            }
+        }
+        return list_c;
 	}
 }
 
